@@ -1,0 +1,128 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f7f9fc;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+h1 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+.controls label {
+    font-weight: 600;
+}
+select {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+.btn-secondary {
+    background: #ecf0f1;
+    border: 1px solid #bdc3c7;
+    padding: 6px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+.btn-secondary:hover {
+    background: #d5d8dc;
+}
+.matrix-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: center;
+    margin: 20px 0;
+}
+.matrix-wrapper {
+    flex: 1 1 45%;
+    min-width: 280px;
+}
+.matrix-wrapper h3 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+table {
+    border-collapse: collapse;
+    margin: 0 auto;
+    background: #fff;
+}
+table td {
+    padding: 4px;
+}
+table input[type="number"] {
+    width: 70px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 0.95rem;
+    transition: 0.2s;
+}
+table input[type="number"]:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 5px rgba(52,152,219,0.3);
+}
+.action-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin: 30px 0 20px;
+}
+.btn-primary {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-primary:hover {
+    background: #2980b9;
+}
+#resultContainer {
+    margin-top: 30px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+.result {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    min-height: 60px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    overflow-x: auto;
+}
+.error {
+    color: #e74c3c;
+}
+pre {
+    margin: 0;
+}

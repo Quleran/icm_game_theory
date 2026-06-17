@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PriceBattle – симулятор ценообразования</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container">
+    <h1>⚡ PriceBattle</h1>
+    <p>Введите матрицы прибыли для двух продавцов. Размерность можно менять от 2 до 8.</p>
+
+    <!-- Управление размерностью -->
+    <div class="controls">
+        <label for="sizeSelect">Размер матриц (n):</label>
+        <select id="sizeSelect">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8" selected>8</option>
+        </select>
+        <button id="applySizeBtn" class="btn-secondary">Применить</button>
+        <button id="exampleBtn" class="btn-secondary">Заполнить пример (2×2)</button>
+    </div>
+
+    <!-- Таблицы матриц -->
+    <div class="matrix-container">
+        <div class="matrix-wrapper">
+            <h3>Матрица A (прибыль игрока 1)</h3>
+            <table id="matrixA">
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="matrix-wrapper">
+            <h3>Матрица B (прибыль игрока 2)</h3>
+            <table id="matrixB">
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Кнопки действий -->
+    <div class="action-buttons">
+        <button id="nashBtn" class="btn-primary">Рассчитать равновесие Нэша</button>
+        <button id="marginBtn" class="btn-primary">Оптимизировать маржу</button>
+    </div>
+
+    <!-- Результаты -->
+    <div id="resultContainer">
+        <h3>Результат</h3>
+        <div id="result" class="result">Здесь появится ответ</div>
+    </div>
+</div>
+
+<script>
+    // --- Глобальные переменные ---
+    let currentSize = 8;
+
+    // --- Элементы DOM ---
+    const sizeSelect = document.getElementById('sizeSelect');
+    const applySizeBtn = document.getElementById('applySizeBtn');
+    const exampleBtn = document.getElementById('exampleBtn');
+    const matrixA = document.getElementById('matrixA').querySelector('tbody');
+    const matrixB = document.getElementById('matrixB').querySelector('tbody');
+    const nashBtn = document.getElementById('nashBtn');
+    const marginBtn = document.getElementById('marginBtn');
+    const resultDiv = document.getElementById('result');
+
+    // --- Функции создания таблиц ---
+
+    function createTable(tbody, rows, cols, defaultValue = '0') {
+        tbody.innerHTML = '';
+        for (let i = 0; i < rows; i++) {
+            const tr = document.createElement('tr');
+            for (let j = 0; j < cols; j++) {
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.step = '0.1';
+                input.value = defaultValue;
+                input.dataset.row = i;
+                input.dataset.col = j;
+                td.appendChild(input);
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
+        }
+    }
+
+    function rebuildMatrices(size) {
+        createTable(matrixA, size, size);
+        createTable(matrixB, size, size);
+        currentSize = size;
+    }
+
+    // --- Чтение данных из таблиц ---
+
+    function getMatrixFromTable(tbody) {
+        const rows = tbody.querySelectorAll('tr');
+        const matrix = [];
+        rows.forEach(tr => {
+            const row = [];
+            const inputs = tr.querySelectorAll('input');
+            inputs.forEach(inp => {
+                row.push(parseFloat(inp.value) || 0);
+            });
+            matrix.push(row);
+        });
+        return matrix;
+    }
+
+    // --- Отправка запроса ---
+
+    async function sendRequest(url, data) {
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                resultDiv.innerHTML = `<span class="error">Ошибка: ${result.detail || 'Неизвестная ошибка'}</span>`;
+                return;
+            }
+            resultDiv.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+        } catch (e) {
+            resultDiv.innerHTML = `<span class="error">Ошибка соединения: ${e.message}</span>`;
+        }
+    }
+
+    // --- Обработчики событий ---
+
+    // Изменение размерности
+    applySizeBtn.addEventListener('click', () => {
+        const newSize = parseInt(sizeSelect.value);
+        if (newSize >= 2 && newSize <= 8) {
+            rebuildMatrices(newSize);
+        }
+    });
+
+    // Заполнение примером (2×2)
+    exampleBtn.addEventListener('click', () => {
+        // Устанавливаем размер 2
+        sizeSelect.value = '2';
+        rebuildMatrices(2);
+        // Заполняем примером из документации
+        const exampleA = [[10, 8], [12, 9]];
+        const exampleB = [[10, 12], [8, 9]];
+        const inputsA = matrixA.querySelectorAll('input');
+        const inputsB = matrixB.querySelectorAll('input');
+        let idx = 0;
+        for (let i = 0; i < 2; i++) {
+            for (let j = 0; j < 2; j++) {
+                inputsA[idx].value = exampleA[i][j];
+                inputsB[idx].value = exampleB[i][j];
+                idx++;
+            }
+        }
+    });
+
+    // Кнопка "Рассчитать равновесие Нэша"
+    nashBtn.addEventListener('click', () => {
+        const A = getMatrixFromTable(matrixA);
+        const B = getMatrixFromTable(matrixB);
+        // Проверка на квадратность
+        const n = A.length;
+        if (A.some(row => row.length !== n) || B.some(row => row.length !== n)) {
+            resultDiv.innerHTML = '<span class="error">Матрицы должны быть квадратными и одинакового размера.</span>';
+            return;
+        }
+        sendRequest('/game/nash', { payoff_matrix_a: A, payoff_matrix_b: B });
+    });
+
+    // Кнопка "Оптимизировать маржу"
+    marginBtn.addEventListener('click', () => {
+        const A = getMatrixFromTable(matrixA);
+        const B = getMatrixFromTable(matrixB);
+        const n = A.length;
+        if (A.some(row => row.length !== n) || B.some(row => row.length !== n)) {
+            resultDiv.innerHTML = '<span class="error">Матрицы должны быть квадратными и одинакового размера.</span>';
+            return;
+        }
+        sendRequest('/optimize/margin', { payoff_matrix_a: A, payoff_matrix_b: B });
+    });
+
+    // --- Инициализация ---
+    rebuildMatrices(8); // по умолчанию 8×8
+</script>
+</body>
+</html>
