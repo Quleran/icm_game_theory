@@ -59,8 +59,6 @@
 <script>
     // --- Глобальные переменные ---
     let currentSize = 8;
-    let currentA = [];
-    let currentB = [];
 
     // --- Элементы DOM ---
     const sizeSelect = document.getElementById('sizeSelect');
@@ -71,8 +69,6 @@
     const nashBtn = document.getElementById('nashBtn');
     const marginBtn = document.getElementById('marginBtn');
     const resultDiv = document.getElementById('result');
-    const matrixWrapperA = document.getElementById('matrixA').closest('.matrix-wrapper');
-    const matrixWrapperB = document.getElementById('matrixB').closest('.matrix-wrapper');
 
     // --- Функции создания таблиц ---
 
@@ -99,13 +95,6 @@
         createTable(matrixA, size, size);
         createTable(matrixB, size, size);
         currentSize = size;
-
-        [matrixWrapperA, matrixWrapperB].forEach(wrapper => {
-            wrapper.className = 'matrix-wrapper';
-            if (size >= 7) {
-                wrapper.classList.add('size-' + size);
-            }
-        });
     }
 
     // --- Чтение данных из таблиц ---
@@ -124,106 +113,9 @@
         return matrix;
     }
 
-    // --- Вспомогательная функция для вычисления ожидаемой прибыли ---
-
-    function computeExpectedPayoff(A, B, x, y) {
-        let payoff1 = 0, payoff2 = 0;
-        const n = A.length;
-        for (let i = 0; i < n; i++) {
-            for (let j = 0; j < n; j++) {
-                payoff1 += x[i] * A[i][j] * y[j];
-                payoff2 += x[i] * B[i][j] * y[j];
-            }
-        }
-        return { payoff1, payoff2 };
-    }
-
-    // --- Функция для красивого отображения результатов (без вероятностей) ---
-
-    function formatResult(data, A, B) {
-        let html = '';
-
-        // Равновесия Нэша
-        if (data.equilibria && data.equilibria.length > 0) {
-            html += '<div class="result-section">';
-            html += `<h4 class="result-title">🎯 Равновесия Нэша (${data.equilibria.length}):</h4>`;
-            data.equilibria.forEach((eq, index) => {
-                const x = eq.strategy_a;
-                const y = eq.strategy_b;
-                const payoffs = computeExpectedPayoff(A, B, x, y);
-
-                const maxA = Math.max(...x);
-                const choiceA = x.indexOf(maxA) + 1;
-                const maxB = Math.max(...y);
-                const choiceB = y.indexOf(maxB) + 1;
-
-                html += `<div class="equilibrium-item">`;
-                html += `<div class="equilibrium-number">Равновесие ${index + 1}:</div>`;
-
-                html += `<div class="strategy-row">`;
-                html += `<span class="player-label">Игрок 1:</span>`;
-                html += `<span class="strategy-choice">выбирает стратегию <strong>${choiceA}</strong></span>`;
-                html += `</div>`;
-
-                html += `<div class="strategy-row">`;
-                html += `<span class="player-label">Игрок 2:</span>`;
-                html += `<span class="strategy-choice">выбирает стратегию <strong>${choiceB}</strong></span>`;
-                html += `</div>`;
-
-                html += `<div class="payoff-row">`;
-                html += `<span class="payoff-label">Ожидаемая прибыль:</span>`;
-                html += `<span class="payoff-values">Игрок 1: <strong>${payoffs.payoff1.toFixed(2)}</strong>, Игрок 2: <strong>${payoffs.payoff2.toFixed(2)}</strong></span>`;
-                html += `</div>`;
-
-                html += `</div>`;
-            });
-            html += '</div>';
-        }
-
-        // Оптимизация маржи
-        if (data.optimal_margin !== undefined && data.strategy_a && data.strategy_b) {
-            const x = data.strategy_a;
-            const y = data.strategy_b;
-            const payoffs = computeExpectedPayoff(A, B, x, y);
-
-            const maxA = Math.max(...x);
-            const choiceA = x.indexOf(maxA) + 1;
-            const maxB = Math.max(...y);
-            const choiceB = y.indexOf(maxB) + 1;
-
-            html += '<div class="result-section">';
-            html += '<h4 class="result-title">💰 Оптимальная маржа (гарантированная прибыль):</h4>';
-            html += `<div class="margin-value">Маржа: <strong>${data.optimal_margin.toFixed(2)}</strong></div>`;
-
-            html += `<div class="equilibrium-item">`;
-            html += `<div class="strategy-row">`;
-            html += `<span class="player-label">Игрок 1:</span>`;
-            html += `<span class="strategy-choice">выбирает стратегию <strong>${choiceA}</strong></span>`;
-            html += `</div>`;
-
-            html += `<div class="strategy-row">`;
-            html += `<span class="player-label">Игрок 2:</span>`;
-            html += `<span class="strategy-choice">выбирает стратегию <strong>${choiceB}</strong></span>`;
-            html += `</div>`;
-
-            html += `<div class="payoff-row">`;
-            html += `<span class="payoff-label">Ожидаемая прибыль (фактическая):</span>`;
-            html += `<span class="payoff-values">Игрок 1: <strong>${payoffs.payoff1.toFixed(2)}</strong>, Игрок 2: <strong>${payoffs.payoff2.toFixed(2)}</strong></span>`;
-            html += `</div>`;
-
-            html += `</div>`;
-            html += '</div>';
-        }
-
-        if (html === '') {
-            html = '<span class="info">Нет данных для отображения.</span>';
-        }
-        return html;
-    }
-
     // --- Отправка запроса ---
 
-    async function sendRequest(url, data, A, B) {
+    async function sendRequest(url, data) {
         try {
             const response = await fetch(url, {
                 method: 'POST',
@@ -235,7 +127,7 @@
                 resultDiv.innerHTML = `<span class="error">Ошибка: ${result.detail || 'Неизвестная ошибка'}</span>`;
                 return;
             }
-            resultDiv.innerHTML = formatResult(result, A, B);
+            resultDiv.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
         } catch (e) {
             resultDiv.innerHTML = `<span class="error">Ошибка соединения: ${e.message}</span>`;
         }
@@ -243,6 +135,7 @@
 
     // --- Обработчики событий ---
 
+    // Изменение размерности
     applySizeBtn.addEventListener('click', () => {
         const newSize = parseInt(sizeSelect.value);
         if (newSize >= 2 && newSize <= 8) {
@@ -250,9 +143,12 @@
         }
     });
 
+    // Заполнение примером (2×2)
     exampleBtn.addEventListener('click', () => {
+        // Устанавливаем размер 2
         sizeSelect.value = '2';
         rebuildMatrices(2);
+        // Заполняем примером из документации
         const exampleA = [[10, 8], [12, 9]];
         const exampleB = [[10, 12], [8, 9]];
         const inputsA = matrixA.querySelectorAll('input');
@@ -267,19 +163,20 @@
         }
     });
 
+    // Кнопка "Рассчитать равновесие Нэша"
     nashBtn.addEventListener('click', () => {
         const A = getMatrixFromTable(matrixA);
         const B = getMatrixFromTable(matrixB);
+        // Проверка на квадратность
         const n = A.length;
         if (A.some(row => row.length !== n) || B.some(row => row.length !== n)) {
             resultDiv.innerHTML = '<span class="error">Матрицы должны быть квадратными и одинакового размера.</span>';
             return;
         }
-        currentA = A;
-        currentB = B;
-        sendRequest('/game/nash', { payoff_matrix_a: A, payoff_matrix_b: B }, A, B);
+        sendRequest('/game/nash', { payoff_matrix_a: A, payoff_matrix_b: B });
     });
 
+    // Кнопка "Оптимизировать маржу"
     marginBtn.addEventListener('click', () => {
         const A = getMatrixFromTable(matrixA);
         const B = getMatrixFromTable(matrixB);
@@ -288,13 +185,11 @@
             resultDiv.innerHTML = '<span class="error">Матрицы должны быть квадратными и одинакового размера.</span>';
             return;
         }
-        currentA = A;
-        currentB = B;
-        sendRequest('/optimize/margin', { payoff_matrix_a: A, payoff_matrix_b: B }, A, B);
+        sendRequest('/optimize/margin', { payoff_matrix_a: A, payoff_matrix_b: B });
     });
 
     // --- Инициализация ---
-    rebuildMatrices(8);
+    rebuildMatrices(8); // по умолчанию 8×8
 </script>
 </body>
 </html>
