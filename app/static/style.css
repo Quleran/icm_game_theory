@@ -6,7 +6,7 @@ body {
     color: #333;
 }
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     background: white;
     padding: 30px;
@@ -49,13 +49,15 @@ select {
 .matrix-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 40px;
+    gap: 20px;
     justify-content: center;
-    margin: 20px 0;
+    margin: 20px 0 30px 0;
 }
 .matrix-wrapper {
     flex: 1 1 45%;
-    min-width: 280px;
+    min-width: 300px;
+    max-width: 48%;
+    overflow-x: auto;
 }
 .matrix-wrapper h3 {
     text-align: center;
@@ -66,17 +68,18 @@ table {
     border-collapse: collapse;
     margin: 0 auto;
     background: #fff;
+    width: auto;
 }
 table td {
-    padding: 4px;
+    padding: 2px;
 }
 table input[type="number"] {
-    width: 70px;
-    padding: 6px 8px;
+    width: 60px;
+    padding: 4px 6px;
     border: 1px solid #ccc;
     border-radius: 4px;
     text-align: center;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     transition: 0.2s;
 }
 table input[type="number"]:focus {
@@ -84,45 +87,243 @@ table input[type="number"]:focus {
     outline: none;
     box-shadow: 0 0 5px rgba(52,152,219,0.3);
 }
+
+/* Уменьшаем ячейки для больших матриц */
+.matrix-wrapper.size-7 table input[type="number"],
+.matrix-wrapper.size-8 table input[type="number"] {
+    width: 50px;
+    padding: 3px 4px;
+    font-size: 0.75rem;
+}
+
+.matrix-wrapper.size-7 table td,
+.matrix-wrapper.size-8 table td {
+    padding: 1px;
+}
+
+/* Кнопки действий - внизу по центру */
 .action-buttons {
     display: flex;
     gap: 20px;
     justify-content: center;
-    margin: 30px 0 20px;
+    align-items: center;
+    margin: 0 auto 20px auto;
+    padding: 20px 0;
+    width: 100%;
+    flex-wrap: wrap;
+    border-top: 2px solid #ecf0f1;
+    border-bottom: 2px solid #ecf0f1;
 }
 .btn-primary {
     background: #3498db;
     color: white;
     border: none;
-    padding: 10px 30px;
+    padding: 12px 35px;
     border-radius: 6px;
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
     transition: 0.2s;
+    min-width: 200px;
 }
 .btn-primary:hover {
     background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(52,152,219,0.3);
 }
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Стили для результатов */
 #resultContainer {
-    margin-top: 30px;
-    border-top: 1px solid #ddd;
+    margin-top: 20px;
     padding-top: 20px;
 }
 .result {
     background: #f8f9fa;
-    padding: 15px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
     min-height: 60px;
-    font-family: monospace;
-    font-size: 0.9rem;
-    white-space: pre-wrap;
     overflow-x: auto;
 }
 .error {
     color: #e74c3c;
+    font-weight: 600;
 }
 pre {
     margin: 0;
+}
+
+/* Стили для форматированных результатов */
+.result-section {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.result-section:last-child {
+    margin-bottom: 0;
+}
+
+.result-title {
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.equilibrium-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.equilibrium-item:last-child {
+    border-bottom: none;
+}
+
+.equilibrium-number {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.strategy-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 6px 0;
+    background: #fafafa;
+    margin: 4px 0;
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.player-label {
+    font-weight: 600;
+    color: #34495e;
+    min-width: 80px;
+}
+
+.strategy-values {
+    font-family: 'Courier New', monospace;
+    background: #ecf0f1;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.strategy-choice {
+    color: #27ae60;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.probabilities {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    width: 100%;
+}
+
+.prob-item {
+    background: #e8f4f8;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #2980b9;
+    font-weight: 500;
+}
+
+.margin-value {
+    font-size: 1.1rem;
+    padding: 10px 0;
+    color: #2c3e50;
+}
+
+.margin-value strong {
+    color: #e67e22;
+    font-size: 1.3rem;
+}
+
+/* Адаптивность для планшетов и маленьких экранов */
+@media (max-width: 992px) {
+    .matrix-wrapper {
+        max-width: 100%;
+        flex: 1 1 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .matrix-container {
+        gap: 20px;
+    }
+    table input[type="number"] {
+        width: 45px;
+        padding: 3px 4px;
+        font-size: 0.75rem;
+    }
+    .matrix-wrapper.size-7 table input[type="number"],
+    .matrix-wrapper.size-8 table input[type="number"] {
+        width: 38px;
+        padding: 2px 3px;
+        font-size: 0.7rem;
+    }
+    .btn-primary {
+        padding: 10px 25px;
+        font-size: 0.9rem;
+        min-width: 150px;
+    }
+    .action-buttons {
+        gap: 15px;
+        padding: 15px 0;
+    }
+    .strategy-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    .player-label {
+        min-width: auto;
+    }
+}
+
+/* Адаптивность для очень маленьких экранов */
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+    table input[type="number"] {
+        width: 35px;
+        padding: 2px 3px;
+        font-size: 0.65rem;
+    }
+    .matrix-wrapper.size-7 table input[type="number"],
+    .matrix-wrapper.size-8 table input[type="number"] {
+        width: 30px;
+        padding: 2px 2px;
+        font-size: 0.6rem;
+    }
+    .btn-primary {
+        padding: 8px 20px;
+        font-size: 0.85rem;
+        min-width: 120px;
+    }
+    .action-buttons {
+        gap: 10px;
+        padding: 12px 0;
+    }
+    .result {
+        padding: 12px;
+    }
+    .result-section {
+        padding: 10px;
+    }
 }

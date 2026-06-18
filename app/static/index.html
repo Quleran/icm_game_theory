@@ -69,6 +69,8 @@
     const nashBtn = document.getElementById('nashBtn');
     const marginBtn = document.getElementById('marginBtn');
     const resultDiv = document.getElementById('result');
+    const matrixWrapperA = document.getElementById('matrixA').closest('.matrix-wrapper');
+    const matrixWrapperB = document.getElementById('matrixB').closest('.matrix-wrapper');
 
     // --- Функции создания таблиц ---
 
@@ -95,6 +97,14 @@
         createTable(matrixA, size, size);
         createTable(matrixB, size, size);
         currentSize = size;
+
+        // Обновляем классы размера для адаптивного отображения
+        [matrixWrapperA, matrixWrapperB].forEach(wrapper => {
+            wrapper.className = 'matrix-wrapper';
+            if (size >= 7) {
+                wrapper.classList.add('size-' + size);
+            }
+        });
     }
 
     // --- Чтение данных из таблиц ---
@@ -113,6 +123,104 @@
         return matrix;
     }
 
+    // --- Функция для красивого отображения результатов ---
+
+    function formatResult(data) {
+        let html = '';
+
+        // Проверяем, есть ли равновесия в чистых стратегиях
+        if (data.equilibria && data.equilibria.length > 0) {
+            html += '<div class="result-section">';
+            html += '<h4 class="result-title">🎯 Равновесия Нэша в чистых стратегиях:</h4>';
+
+            data.equilibria.forEach((eq, index) => {
+                html += `<div class="equilibrium-item">`;
+                html += `<div class="equilibrium-number">Равновесие ${index + 1}:</div>`;
+
+                // Стратегия игрока 1
+                html += `<div class="strategy-row">`;
+                html += `<span class="player-label">Игрок 1:</span>`;
+                html += `<span class="strategy-values">[${eq.strategy_a.map(v => v.toFixed(2)).join(', ')}]</span>`;
+                // Находим выбранную стратегию
+                const choiceA = eq.strategy_a.indexOf(Math.max(...eq.strategy_a));
+                html += `<span class="strategy-choice">→ выбирает стратегию ${choiceA + 1}</span>`;
+                html += `</div>`;
+
+                // Стратегия игрока 2
+                html += `<div class="strategy-row">`;
+                html += `<span class="player-label">Игрок 2:</span>`;
+                html += `<span class="strategy-values">[${eq.strategy_b.map(v => v.toFixed(2)).join(', ')}]</span>`;
+                const choiceB = eq.strategy_b.indexOf(Math.max(...eq.strategy_b));
+                html += `<span class="strategy-choice">→ выбирает стратегию ${choiceB + 1}</span>`;
+                html += `</div>`;
+
+                html += `</div>`;
+            });
+            html += '</div>';
+        }
+
+        // Проверяем, есть ли смешанная стратегия
+        if (data.strategy_a && data.strategy_b) {
+            html += '<div class="result-section">';
+            html += '<h4 class="result-title">🎲 Смешанное равновесие Нэша:</h4>';
+            html += '<div class="equilibrium-item">';
+
+            // Стратегия игрока 1
+            html += `<div class="strategy-row">`;
+            html += `<span class="player-label">Игрок 1:</span>`;
+            html += `<span class="strategy-values">[${data.strategy_a.map(v => v.toFixed(2)).join(', ')}]</span>`;
+            // Показываем вероятности
+            html += `<div class="probabilities">`;
+            data.strategy_a.forEach((prob, idx) => {
+                html += `<span class="prob-item">Стратегия ${idx + 1}: ${(prob * 100).toFixed(1)}%</span>`;
+            });
+            html += `</div>`;
+            html += `</div>`;
+
+            // Стратегия игрока 2
+            html += `<div class="strategy-row">`;
+            html += `<span class="player-label">Игрок 2:</span>`;
+            html += `<span class="strategy-values">[${data.strategy_b.map(v => v.toFixed(2)).join(', ')}]</span>`;
+            html += `<div class="probabilities">`;
+            data.strategy_b.forEach((prob, idx) => {
+                html += `<span class="prob-item">Стратегия ${idx + 1}: ${(prob * 100).toFixed(1)}%</span>`;
+            });
+            html += `</div>`;
+            html += `</div>`;
+
+            html += '</div>';
+            html += '</div>';
+        }
+
+        // Проверяем, есть ли оптимальная маржа
+        if (data.optimal_strategy_a && data.optimal_strategy_b && data.margin_value !== undefined) {
+            html += '<div class="result-section">';
+            html += '<h4 class="result-title">💰 Оптимальная маржа:</h4>';
+            html += '<div class="equilibrium-item">';
+
+            html += `<div class="margin-value">Общая маржа: <strong>${data.margin_value.toFixed(2)}</strong></div>`;
+
+            html += `<div class="strategy-row">`;
+            html += `<span class="player-label">Игрок 1:</span>`;
+            html += `<span class="strategy-values">[${data.optimal_strategy_a.map(v => v.toFixed(2)).join(', ')}]</span>`;
+            const choiceA = data.optimal_strategy_a.indexOf(Math.max(...data.optimal_strategy_a));
+            html += `<span class="strategy-choice">→ выбирает стратегию ${choiceA + 1}</span>`;
+            html += `</div>`;
+
+            html += `<div class="strategy-row">`;
+            html += `<span class="player-label">Игрок 2:</span>`;
+            html += `<span class="strategy-values">[${data.optimal_strategy_b.map(v => v.toFixed(2)).join(', ')}]</span>`;
+            const choiceB = data.optimal_strategy_b.indexOf(Math.max(...data.optimal_strategy_b));
+            html += `<span class="strategy-choice">→ выбирает стратегию ${choiceB + 1}</span>`;
+            html += `</div>`;
+
+            html += '</div>';
+            html += '</div>';
+        }
+
+        return html;
+    }
+
     // --- Отправка запроса ---
 
     async function sendRequest(url, data) {
@@ -127,7 +235,10 @@
                 resultDiv.innerHTML = `<span class="error">Ошибка: ${result.detail || 'Неизвестная ошибка'}</span>`;
                 return;
             }
-            resultDiv.innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+
+            // Форматируем результат красиво
+            resultDiv.innerHTML = formatResult(result);
+
         } catch (e) {
             resultDiv.innerHTML = `<span class="error">Ошибка соединения: ${e.message}</span>`;
         }
