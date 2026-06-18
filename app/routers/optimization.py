@@ -7,9 +7,6 @@ router = APIRouter()
 
 @router.post("/margin", response_model=OptimizationResponse)
 async def optimize_min_margin(request: OptimizationRequest):
-    """
-    Оптимизирует минимальную маржу (гарантированную прибыль) через линейное программирование.
-    """
     A = request.payoff_matrix_a
     B = request.payoff_matrix_b
 
